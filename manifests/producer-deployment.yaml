@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: producer
+  template:
+    metadata:
+      labels:spa
+        app: producer
+    spec:
+      containers:
+        - name: producer
+          image: finhub-kafka-producer:latest
+          env:
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+            - name: SCHEMA_REGISTRY_URL
+              value: "http://schema-registry:8081"
+          command: ["/bin/bash", "-c", "sleep 20 && python /app/src/finhub_api.py"]
+      restartPolicy: Never
+      initContainers:
+        initConainers:
+        - name: wait-for-kafka
+          image: busybox:latest
+          command: ["sh", "-c", "until nc -zv kafka 9092; do echo 'Waiting for Kafka...' && sleep 1; done;"]
+        - name: wait-for-schema-registry
+          image: busybox:latest
+          command: ["sh", "-c", "until nc -zv schema-registry 8081; do echo 'Waiting for Schema Registry...' && sleep 1; done;"]
+        - name: wait-for-kafka-init
+          image: busybox:latest
+          command: ["sh", "-c", "until kubectl get job kafka-init -n confluent -o jsonpath='{.status.conditions[?(@.type==\"Complete\")].status}' | grep True; do echo 'Waiting for kafka-init Job...' && sleep 10; done;"]
+        - name: wait-for-kafka-init
+          image: busybox:latest
+          command: ["sh", "-c", "until kubectl get job schema-init -n confluent -o jsonpath='{.status.conditions[?(@.type==\"Complete\")].status}' | grep True; do echo 'Waiting for kafka-init Job...' && sleep 10; done;"]
+   

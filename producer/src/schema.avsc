@@ -1,0 +1,39 @@
+{
+    "type": "record",
+    "name": "TradeRecord",
+    "fields": [
+      {
+        "name": "data",
+        "type": {
+          "type": "array",
+          "items": {
+            "type": "record",
+            "name": "Trade",
+            "fields": [
+              {
+                "name": "p",
+                "type": "double"
+              },
+              {
+                "name": "s",
+                "type": "string"
+              },
+              {
+                "name": "t",
+                "type": "long"
+              },
+              {
+                "name": "v",
+                "type": "double"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "type",
+        "type": "string"
+      }
+  ]
+}
+  

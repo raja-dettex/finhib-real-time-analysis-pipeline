@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kafka-init
+spec:
+  template:
+    metadata:
+      name: kafka-init
+    spec:
+      containers:
+        - name: kafka-init
+          image: confluentinc/cp-kafka:6.1.0
+          command: ["/bin/bash", "-c", "sleep 20 && kafka-topics --create --topic live-stock --bootstrap-server kafka:29092 --replication-factor 1 --partitions 1"]
+      restartPolicy: OnFailure

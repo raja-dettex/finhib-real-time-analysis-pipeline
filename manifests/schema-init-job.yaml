@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: schema-init
+spec:
+  template:
+    metadata:
+      name: schema-init
+    spec:
+      containers:
+        - name: schema-init
+          image: finhub-schema-init:latest
+          command: ["/bin/bash", "-c", "sleep 20 && python /temp/script/create-schema.py schema-registry:8081"]
+      restartPolicy: OnFailure
+      initConainers:
+        - name: wait-for-kafka
+          image: busybox:latest
+          command: ["sh", "-c", "until nc -zv kafka 29092; do echo 'Waiting for Kafka...' && sleep 1; done;"]
+        - name: wait-for-schema-registry
+          image: busybox:latest
+          command: ["sh", "-c", "until nc -zv schema-registry 8081; do echo 'Waiting for Schema Registry...' && sleep 1; done;"]
+        - name: wait-for-kafka-init
+        image: busybox:latest
+          command: ["sh", "-c", "until kubectl get job kafka-init -n confluent -o jsonpath='{.status.conditions[?(@.type==\"Complete\")].status}' | grep True; do echo 'Waiting for kafka-init Job...' && sleep 10; done;"]
+   

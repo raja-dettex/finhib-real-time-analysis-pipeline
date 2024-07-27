@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spark-master
+  template:
+    metadata:
+      labels:
+        app: spark-master
+    spec:
+      containers:
+        - name: spark-master
+          image: bitnami/spark:latest
+          ports:
+            - containerPort: 8080
+            - containerPort: 7077
+          volumeMounts:
+            - name: work-volume
+              mountPath: /work
+              subPath: main.py
+            - name: entrypoint-volume
+              mountPath: /
+              subPath: entrypoint.sh
+           command:
+            - "/entrypoint.sh"
+            - "bin/spark-class"
+            - "org.apache.spark.deploy.master.Master"
+      volumes:
+        - name: work-volume
+          hostPath:
+            path: ./processor/src/
+        - name: entrypoint-volume
+          hostPath:
+            path: ./processor
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-master
+spec:
+  selector:
+    app: spark-master
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+    - protocol: TCP
+      port: 7077
+      targetPort: 7077
